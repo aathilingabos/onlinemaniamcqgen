@@ -27,7 +27,7 @@ exports.handler = async function (event, context) {
         "Content-Type": "application/json",
       },
       body: JSON.stringify({
-        model: "mistralai/mixtral-8x7b", // FREE model
+        model: "mistralai/mistral-7b-instruct", // FREE model
         messages: messages,
       }),
     });
