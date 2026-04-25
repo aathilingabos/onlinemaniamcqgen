@@ -9,42 +9,48 @@ exports.handler = async function (event, context) {
     return { statusCode: 200, headers, body: "" };
   }
 
-  if (event.httpMethod !== "POST") {
-    return { statusCode: 405, headers, body: JSON.stringify({ error: "Method not allowed" }) };
-  }
-
   try {
     const { messages } = JSON.parse(event.body);
 
-    if (!messages || !Array.isArray(messages)) {
-      return { statusCode: 400, headers, body: JSON.stringify({ error: "Invalid request" }) };
-    }
+    const userMessage = messages[messages.length - 1].content;
 
-    const response = await fetch("https://openrouter.ai/api/v1/chat/completions", {
-      method: "POST",
-      headers: {
-        "Authorization": `Bearer ${process.env.OPENROUTER_API_KEY}`,
-        "Content-Type": "application/json",
-      },
-      body: JSON.stringify({
-        model: "meta-llama/llama-3-8b-instruct:free", // FREE model
-        messages: messages,
-      }),
-    });
+    const response = await fetch(
+      `https://generativelanguage.googleapis.com/v1/models/gemini-pro:generateContent?key=${process.env.GEMINI_API_KEY}`,
+      {
+        method: "POST",
+        headers: {
+          "Content-Type": "application/json",
+        },
+        body: JSON.stringify({
+          contents: [
+            {
+              parts: [{ text: userMessage }],
+            },
+          ],
+        }),
+      }
+    );
 
     const data = await response.json();
 
-    if (data.error) {
-      return { statusCode: 500, headers, body: JSON.stringify({ error: data.error.message }) };
-    }
+    const text =
+      data.candidates?.[0]?.content?.parts?.[0]?.text ||
+      "No response";
 
     return {
       statusCode: 200,
       headers,
-      body: JSON.stringify(data.choices[0].message),
+      body: JSON.stringify({
+        role: "assistant",
+        content: text,
+      }),
     };
 
   } catch (err) {
-    return { statusCode: 500, headers, body: JSON.stringify({ error: err.message }) };
+    return {
+      statusCode: 500,
+      headers,
+      body: JSON.stringify({ error: err.message }),
+    };
   }
 };
