@@ -1,0 +1,526 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>Onlinemania – AI Question Generator</title>
+<link href="https://fonts.googleapis.com/css2?family=Baloo+Thambi+2:wght@400;600;800&family=Noto+Sans+Tamil:wght@400;600;700&family=Space+Mono:wght@400;700&display=swap" rel="stylesheet">
+<style>
+  :root {
+    --saffron: #FF6B00;
+    --saffron-light: #FF8C38;
+    --saffron-glow: rgba(255,107,0,0.18);
+    --dark: #0D0D0D;
+    --dark2: #161616;
+    --dark3: #1F1F1F;
+    --dark4: #2A2A2A;
+    --text: #F0EDE8;
+    --text-muted: #888;
+    --green: #22C55E;
+    --red: #EF4444;
+    --yellow: #FBBF24;
+    --border: rgba(255,107,0,0.15);
+  }
+  *{margin:0;padding:0;box-sizing:border-box;}
+  body{background:var(--dark);color:var(--text);font-family:'Baloo Thambi 2','Noto Sans Tamil',sans-serif;min-height:100vh;overflow-x:hidden;}
+  body::before{content:'';position:fixed;inset:0;background-image:radial-gradient(circle at 20% 20%,rgba(255,107,0,0.06) 0%,transparent 50%),radial-gradient(circle at 80% 80%,rgba(255,107,0,0.04) 0%,transparent 50%);pointer-events:none;z-index:0;}
+  .container{max-width:780px;margin:0 auto;padding:0 20px 60px;position:relative;z-index:1;}
+
+  /* Header */
+  header{padding:32px 0 28px;text-align:center;border-bottom:1px solid var(--border);margin-bottom:40px;}
+  .logo-row{display:flex;align-items:center;justify-content:center;gap:12px;margin-bottom:8px;}
+  .logo-icon{width:44px;height:44px;background:var(--saffron);border-radius:12px;display:flex;align-items:center;justify-content:center;font-size:22px;box-shadow:0 0 24px var(--saffron-glow);}
+  .brand{font-size:26px;font-weight:800;color:var(--saffron);letter-spacing:-0.5px;}
+  .tagline{font-size:13px;color:var(--text-muted);font-family:'Space Mono',monospace;letter-spacing:1px;text-transform:uppercase;}
+
+  /* Section label */
+  .section-label{font-size:11px;font-family:'Space Mono',monospace;color:var(--saffron);letter-spacing:2px;text-transform:uppercase;margin-bottom:12px;display:flex;align-items:center;gap:8px;}
+  .section-label::after{content:'';flex:1;height:1px;background:var(--border);}
+
+  /* Upload */
+  .upload-zone{border:2px dashed var(--border);border-radius:16px;padding:40px 24px;text-align:center;cursor:pointer;transition:all 0.25s;background:var(--dark2);position:relative;overflow:hidden;margin-bottom:28px;}
+  .upload-zone:hover,.upload-zone.dragover{border-color:var(--saffron);background:var(--dark3);box-shadow:0 0 32px var(--saffron-glow);}
+  .upload-zone input[type="file"]{position:absolute;inset:0;opacity:0;cursor:pointer;width:100%;height:100%;}
+  .upload-icon{font-size:40px;margin-bottom:12px;display:block;}
+  .upload-title{font-size:17px;font-weight:700;margin-bottom:6px;}
+  .upload-sub{font-size:13px;color:var(--text-muted);}
+  .upload-sub span{color:var(--saffron);font-weight:600;}
+  .file-preview{display:none;align-items:center;gap:12px;background:var(--dark3);border:1px solid var(--border);border-radius:12px;padding:14px 18px;margin-top:12px;}
+  .file-preview.show{display:flex;}
+  .file-icon-box{width:40px;height:40px;background:var(--saffron-glow);border-radius:8px;display:flex;align-items:center;justify-content:center;font-size:20px;flex-shrink:0;}
+  .file-info{flex:1;min-width:0;}
+  .file-name{font-size:14px;font-weight:600;white-space:nowrap;overflow:hidden;text-overflow:ellipsis;}
+  .file-size{font-size:12px;color:var(--text-muted);font-family:'Space Mono',monospace;}
+  .remove-file{background:none;border:none;color:var(--text-muted);cursor:pointer;font-size:18px;padding:4px;transition:color 0.2s;}
+  .remove-file:hover{color:var(--red);}
+
+  /* OR divider */
+  .or-divider{text-align:center;margin:20px 0;position:relative;}
+  .or-divider::before{content:'';position:absolute;top:50%;left:0;right:0;height:1px;background:var(--border);}
+  .or-divider span{background:var(--dark);padding:0 16px;font-size:12px;color:var(--text-muted);font-family:'Space Mono',monospace;position:relative;}
+
+  /* Textarea */
+  .text-input-area{background:var(--dark2);border:1px solid var(--border);border-radius:16px;overflow:hidden;transition:border-color 0.2s;margin-bottom:20px;}
+  .text-input-area:focus-within{border-color:var(--saffron);box-shadow:0 0 20px var(--saffron-glow);}
+  .text-input-area textarea{width:100%;background:transparent;border:none;outline:none;padding:18px 20px;color:var(--text);font-family:'Baloo Thambi 2','Noto Sans Tamil',sans-serif;font-size:14px;line-height:1.7;resize:none;min-height:130px;}
+  .text-input-area textarea::placeholder{color:var(--text-muted);}
+
+  /* Controls */
+  .controls-row{display:grid;grid-template-columns:1fr 1fr;gap:14px;margin-bottom:24px;}
+  .control-box{background:var(--dark2);border:1px solid var(--border);border-radius:12px;padding:14px 16px;}
+  .control-box label{display:block;font-size:11px;font-family:'Space Mono',monospace;color:var(--text-muted);text-transform:uppercase;letter-spacing:1px;margin-bottom:8px;}
+  .control-box select{width:100%;background:var(--dark3);border:1px solid var(--border);border-radius:8px;color:var(--text);font-family:'Baloo Thambi 2',sans-serif;font-size:14px;padding:8px 12px;cursor:pointer;outline:none;transition:border-color 0.2s;}
+  .control-box select:focus{border-color:var(--saffron);}
+
+  /* Button */
+  .generate-btn{width:100%;padding:18px;background:var(--saffron);color:#fff;border:none;border-radius:14px;font-family:'Baloo Thambi 2',sans-serif;font-size:17px;font-weight:800;cursor:pointer;transition:all 0.2s;display:flex;align-items:center;justify-content:center;gap:10px;box-shadow:0 4px 20px rgba(255,107,0,0.3);margin-bottom:32px;}
+  .generate-btn:hover:not(:disabled){background:var(--saffron-light);transform:translateY(-2px);box-shadow:0 8px 28px rgba(255,107,0,0.4);}
+  .generate-btn:disabled{opacity:0.5;cursor:not-allowed;transform:none;}
+
+  /* Loading */
+  .loading-box{display:none;background:var(--dark2);border:1px solid var(--border);border-radius:16px;padding:40px;text-align:center;margin-bottom:28px;}
+  .loading-box.show{display:block;}
+  .spinner{width:48px;height:48px;border:3px solid var(--border);border-top-color:var(--saffron);border-radius:50%;animation:spin 0.8s linear infinite;margin:0 auto 16px;}
+  @keyframes spin{to{transform:rotate(360deg);}}
+  .loading-text{font-size:15px;color:var(--text-muted);}
+  .loading-text strong{display:block;color:var(--text);font-size:17px;margin-bottom:4px;}
+
+  /* Quiz */
+  .quiz-section{display:none;}
+  .quiz-section.show{display:block;}
+  .quiz-header{display:flex;align-items:center;justify-content:space-between;margin-bottom:24px;flex-wrap:wrap;gap:12px;}
+  .quiz-title{font-size:20px;font-weight:800;}
+  .quiz-meta{display:flex;gap:10px;flex-wrap:wrap;}
+  .meta-chip{background:var(--dark3);border:1px solid var(--border);border-radius:20px;padding:5px 14px;font-size:12px;font-family:'Space Mono',monospace;color:var(--text-muted);}
+  .meta-chip.orange{color:var(--saffron);border-color:var(--saffron-glow);}
+  .progress-wrap{background:var(--dark3);border-radius:99px;height:6px;margin-bottom:28px;overflow:hidden;}
+  .progress-bar{height:100%;background:var(--saffron);border-radius:99px;transition:width 0.4s ease;box-shadow:0 0 12px rgba(255,107,0,0.5);}
+
+  /* Question card */
+  .question-card{background:var(--dark2);border:1px solid var(--border);border-radius:18px;padding:28px;margin-bottom:16px;animation:fadeUp 0.35s ease;}
+  @keyframes fadeUp{from{opacity:0;transform:translateY(16px)}to{opacity:1;transform:translateY(0)}}
+  .q-number{font-size:11px;font-family:'Space Mono',monospace;color:var(--saffron);letter-spacing:1.5px;text-transform:uppercase;margin-bottom:10px;}
+  .q-text{font-size:16px;font-weight:600;line-height:1.6;margin-bottom:20px;}
+  .options-grid{display:grid;gap:10px;}
+  .option-btn{background:var(--dark3);border:1.5px solid var(--border);border-radius:10px;padding:13px 16px;text-align:left;cursor:pointer;font-family:'Baloo Thambi 2','Noto Sans Tamil',sans-serif;font-size:14px;color:var(--text);transition:all 0.2s;display:flex;align-items:flex-start;gap:12px;line-height:1.5;width:100%;}
+  .option-btn:hover:not(:disabled){border-color:var(--saffron);background:var(--dark4);transform:translateX(3px);}
+  .option-btn:disabled{cursor:default;}
+  .option-btn.correct{border-color:var(--green);background:rgba(34,197,94,0.08);color:var(--green);}
+  .option-btn.wrong{border-color:var(--red);background:rgba(239,68,68,0.08);color:var(--red);}
+  .option-btn.reveal{border-color:var(--green);background:rgba(34,197,94,0.05);}
+  .option-label{width:24px;height:24px;border-radius:6px;background:var(--dark4);display:flex;align-items:center;justify-content:center;font-size:12px;font-weight:700;font-family:'Space Mono',monospace;flex-shrink:0;transition:all 0.2s;}
+  .option-btn.correct .option-label{background:var(--green);color:#000;}
+  .option-btn.wrong .option-label{background:var(--red);color:#fff;}
+  .option-btn.reveal .option-label{background:var(--green);color:#000;}
+  .explanation{display:none;margin-top:16px;background:rgba(255,107,0,0.06);border:1px solid rgba(255,107,0,0.2);border-radius:10px;padding:14px 16px;font-size:13px;line-height:1.7;color:var(--text-muted);animation:fadeUp 0.3s ease;}
+  .explanation.show{display:block;}
+  .explanation strong{color:var(--saffron);display:block;margin-bottom:4px;font-size:12px;font-family:'Space Mono',monospace;letter-spacing:1px;text-transform:uppercase;}
+
+  /* Nav */
+  .nav-row{display:flex;gap:12px;margin-top:24px;}
+  .nav-btn{flex:1;padding:14px;border-radius:12px;border:1.5px solid var(--border);background:var(--dark2);color:var(--text);font-family:'Baloo Thambi 2',sans-serif;font-size:15px;font-weight:700;cursor:pointer;transition:all 0.2s;}
+  .nav-btn:hover:not(:disabled){border-color:var(--saffron);background:var(--dark3);}
+  .nav-btn:disabled{opacity:0.3;cursor:not-allowed;}
+  .nav-btn.primary{background:var(--saffron);border-color:var(--saffron);color:#fff;box-shadow:0 4px 16px rgba(255,107,0,0.25);}
+  .nav-btn.primary:hover:not(:disabled){background:var(--saffron-light);}
+
+  /* Results */
+  .results-card{display:none;background:var(--dark2);border:1px solid var(--border);border-radius:20px;padding:40px 32px;text-align:center;animation:fadeUp 0.4s ease;}
+  .results-card.show{display:block;}
+  .score-circle{width:120px;height:120px;border-radius:50%;border:4px solid var(--saffron);display:flex;flex-direction:column;align-items:center;justify-content:center;margin:0 auto 20px;box-shadow:0 0 40px var(--saffron-glow);background:radial-gradient(circle,rgba(255,107,0,0.08),transparent);}
+  .score-num{font-size:34px;font-weight:800;color:var(--saffron);line-height:1;}
+  .score-denom{font-size:14px;color:var(--text-muted);font-family:'Space Mono',monospace;}
+  .result-title{font-size:22px;font-weight:800;margin-bottom:8px;}
+  .result-msg{font-size:14px;color:var(--text-muted);margin-bottom:28px;line-height:1.7;}
+  .stats-row{display:flex;justify-content:center;gap:24px;margin-bottom:28px;flex-wrap:wrap;}
+  .stat-box{text-align:center;}
+  .stat-val{font-size:24px;font-weight:800;}
+  .stat-val.green{color:var(--green);}
+  .stat-val.red{color:var(--red);}
+  .stat-label{font-size:11px;font-family:'Space Mono',monospace;color:var(--text-muted);text-transform:uppercase;letter-spacing:1px;}
+  .result-actions{display:flex;gap:12px;flex-wrap:wrap;}
+  .result-actions button{flex:1;min-width:140px;padding:14px;border-radius:12px;font-family:'Baloo Thambi 2',sans-serif;font-size:15px;font-weight:700;cursor:pointer;transition:all 0.2s;border:1.5px solid var(--border);background:var(--dark3);color:var(--text);}
+  .result-actions button:hover{border-color:var(--saffron);background:var(--dark4);}
+  .result-actions button.primary{background:var(--saffron);border-color:var(--saffron);color:#fff;}
+  .result-actions button.primary:hover{background:var(--saffron-light);}
+
+  /* Error */
+  .error-box{display:none;background:rgba(239,68,68,0.08);border:1px solid rgba(239,68,68,0.3);border-radius:12px;padding:16px 20px;font-size:14px;color:var(--red);margin-bottom:20px;line-height:1.6;}
+  .error-box.show{display:block;}
+
+  footer{text-align:center;padding:24px 0 0;border-top:1px solid var(--border);margin-top:40px;font-size:12px;color:var(--text-muted);font-family:'Space Mono',monospace;}
+  footer span{color:var(--saffron);}
+
+  @media(max-width:520px){
+    .controls-row{grid-template-columns:1fr;}
+    .quiz-header{flex-direction:column;align-items:flex-start;}
+    .score-circle{width:100px;height:100px;}
+    .score-num{font-size:28px;}
+  }
+</style>
+</head>
+<body>
+<div class="container">
+
+  <header>
+    <div class="logo-row">
+      <div class="logo-icon">📚</div>
+      <div class="brand">Onlinemania</div>
+    </div>
+    <div class="tagline">AI Question Generator · TNPSC Exam Prep</div>
+  </header>
+
+  <!-- Upload -->
+  <div class="section-label">Upload Study Material</div>
+  <div class="upload-zone" id="uploadZone">
+    <input type="file" id="fileInput" accept=".pdf,.png,.jpg,.jpeg,.txt">
+    <span class="upload-icon">📄</span>
+    <div class="upload-title">Drop your file here or click to browse</div>
+    <div class="upload-sub">Supports <span>PDF, Images, Text</span> files</div>
+  </div>
+  <div class="file-preview" id="filePreview">
+    <div class="file-icon-box" id="fileIconEl">📄</div>
+    <div class="file-info">
+      <div class="file-name" id="fileName">—</div>
+      <div class="file-size" id="fileSize">—</div>
+    </div>
+    <button class="remove-file" id="removeFile">✕</button>
+  </div>
+
+  <div class="or-divider"><span>OR PASTE TEXT</span></div>
+
+  <div class="text-input-area">
+    <textarea id="textInput" placeholder="படிக்க வேண்டிய topic text-ஐ இங்கே paste பண்ணுங்கள்... (Paste your study material here in Tamil or English)" rows="5"></textarea>
+  </div>
+
+  <div class="controls-row">
+    <div class="control-box">
+      <label>Number of Questions</label>
+      <select id="numQuestions">
+        <option value="5">5 Questions</option>
+        <option value="10" selected>10 Questions</option>
+        <option value="15">15 Questions</option>
+        <option value="20">20 Questions</option>
+      </select>
+    </div>
+    <div class="control-box">
+      <label>Language / மொழி</label>
+      <select id="language">
+        <option value="tamil">தமிழ் (Tamil)</option>
+        <option value="english">English</option>
+        <option value="both" selected>Both / இரண்டும்</option>
+      </select>
+    </div>
+  </div>
+
+  <div class="error-box" id="errorBox"></div>
+
+  <button class="generate-btn" id="generateBtn" onclick="generateQuestions()">
+    <span>⚡</span> Generate Questions / கேள்விகள் உருவாக்கு
+  </button>
+
+  <div class="loading-box" id="loadingBox">
+    <div class="spinner"></div>
+    <div class="loading-text">
+      <strong>AI கேள்விகள் உருவாக்குகிறது...</strong>
+      உங்கள் material-ஐ படித்து MCQ questions தயார் பண்றோம்
+    </div>
+  </div>
+
+  <!-- Quiz -->
+  <div class="quiz-section" id="quizSection">
+    <div class="quiz-header">
+      <div class="quiz-title">📝 Practice Quiz</div>
+      <div class="quiz-meta">
+        <div class="meta-chip orange" id="topicChip">—</div>
+        <div class="meta-chip" id="progressChip">1 / 10</div>
+      </div>
+    </div>
+    <div class="progress-wrap">
+      <div class="progress-bar" id="progressBar" style="width:10%"></div>
+    </div>
+    <div id="questionContainer"></div>
+    <div class="nav-row">
+      <button class="nav-btn" id="prevBtn" onclick="navigate(-1)" disabled>← முந்தைய</button>
+      <button class="nav-btn primary" id="nextBtn" onclick="navigate(1)">அடுத்தது →</button>
+    </div>
+  </div>
+
+  <!-- Results -->
+  <div class="results-card" id="resultsCard">
+    <div class="score-circle">
+      <div class="score-num" id="scoreNum">0</div>
+      <div class="score-denom" id="scoreDenom">/ 10</div>
+    </div>
+    <div class="result-title" id="resultTitle">—</div>
+    <div class="result-msg" id="resultMsg">—</div>
+    <div class="stats-row">
+      <div class="stat-box"><div class="stat-val green" id="correctCount">0</div><div class="stat-label">சரி ✅</div></div>
+      <div class="stat-box"><div class="stat-val red" id="wrongCount">0</div><div class="stat-label">தவறு ❌</div></div>
+      <div class="stat-box"><div class="stat-val" id="percentCount" style="color:var(--yellow)">0%</div><div class="stat-label">Score</div></div>
+    </div>
+    <div class="result-actions">
+      <button onclick="retryQuiz()">🔄 மீண்டும் Try</button>
+      <button class="primary" onclick="resetAll()">📄 புதிய Material</button>
+    </div>
+  </div>
+
+  <footer>Powered by <span>Onlinemania AI</span> · TNPSC Exam Preparation</footer>
+</div>
+
+<script>
+let questions=[], currentQ=0, userAnswers=[], fileData=null, fileType=null;
+
+const fileInput=document.getElementById('fileInput');
+const uploadZone=document.getElementById('uploadZone');
+
+fileInput.addEventListener('change', handleFile);
+uploadZone.addEventListener('dragover', e=>{e.preventDefault();uploadZone.classList.add('dragover');});
+uploadZone.addEventListener('dragleave', ()=>uploadZone.classList.remove('dragover'));
+uploadZone.addEventListener('drop', e=>{
+  e.preventDefault(); uploadZone.classList.remove('dragover');
+  if(e.dataTransfer.files[0]){fileInput.files=e.dataTransfer.files; handleFile();}
+});
+document.getElementById('removeFile').addEventListener('click', ()=>{
+  fileInput.value=''; fileData=null; fileType=null;
+  document.getElementById('filePreview').classList.remove('show');
+  uploadZone.style.display='';
+});
+
+function handleFile(){
+  const file=fileInput.files[0]; if(!file) return;
+  const icons={pdf:'📕',png:'🖼️',jpg:'🖼️',jpeg:'🖼️',txt:'📄'};
+  const ext=file.name.split('.').pop().toLowerCase();
+  document.getElementById('fileName').textContent=file.name;
+  document.getElementById('fileSize').textContent=formatSize(file.size);
+  document.getElementById('fileIconEl').textContent=icons[ext]||'📄';
+  document.getElementById('filePreview').classList.add('show');
+  uploadZone.style.display='none';
+  const reader=new FileReader();
+  if(['png','jpg','jpeg'].includes(ext)){
+    fileType='image';
+    reader.onload=e=>{fileData=e.target.result.split(',')[1];};
+    reader.readAsDataURL(file);
+  } else {
+    fileType='text';
+    reader.onload=e=>{fileData=e.target.result;};
+    reader.readAsText(file,'UTF-8');
+  }
+}
+
+function formatSize(b){
+  if(b<1024) return b+' B';
+  if(b<1048576) return (b/1024).toFixed(1)+' KB';
+  return (b/1048576).toFixed(1)+' MB';
+}
+
+function showError(msg){
+  const el=document.getElementById('errorBox');
+  el.textContent=msg; el.classList.add('show');
+  setTimeout(()=>el.classList.remove('show'),7000);
+}
+
+async function generateQuestions(){
+  const text=document.getElementById('textInput').value.trim();
+  const numQ=document.getElementById('numQuestions').value;
+  const lang=document.getElementById('language').value;
+
+  if(!fileData && !text){
+    showError('⚠️ Please upload a file or paste text first!');
+    return;
+  }
+
+  document.getElementById('errorBox').classList.remove('show');
+  document.getElementById('generateBtn').disabled=true;
+  document.getElementById('loadingBox').classList.add('show');
+  document.getElementById('quizSection').classList.remove('show');
+  document.getElementById('resultsCard').classList.remove('show');
+
+  const langMap={
+    tamil:'Generate ALL questions and options in Tamil language only.',
+    english:'Generate ALL questions and options in English language only.',
+    both:'Generate questions in Tamil with English translation in brackets where helpful.'
+  };
+
+  const content=fileData||text;
+  const isImage=fileType==='image' && fileData;
+
+  let messages;
+  if(isImage){
+    messages=[{role:'user',content:[
+      {type:'image',source:{type:'base64',media_type:'image/jpeg',data:fileData}},
+      {type:'text',text:buildPrompt(numQ,langMap[lang])}
+    ]}];
+  } else {
+    messages=[{role:'user',content:buildPrompt(numQ,langMap[lang],content)}];
+  }
+
+  try{
+    // Calls Netlify function — API key stays hidden on server
+    const res=await fetch('/.netlify/functions/generate',{
+      method:'POST',
+      headers:{'Content-Type':'application/json'},
+      body:JSON.stringify({messages})
+    });
+
+    const data=await res.json();
+    if(data.error) throw new Error(data.error);
+
+    const raw=data.content.map(c=>c.text||'').join('');
+    const clean=raw.replace(/```json|```/g,'').trim();
+
+    let parsed;
+    try{parsed=JSON.parse(clean);}
+    catch{
+      const match=clean.match(/\[[\s\S]*\]/);
+      if(match) parsed=JSON.parse(match[0]);
+      else throw new Error('Could not parse response. Please try again.');
+    }
+
+    if(!Array.isArray(parsed)||parsed.length===0)
+      throw new Error('No questions generated. Please add more content and try again.');
+
+    questions=parsed; currentQ=0;
+    userAnswers=new Array(questions.length).fill(null);
+
+    document.getElementById('loadingBox').classList.remove('show');
+    document.getElementById('generateBtn').disabled=false;
+    document.getElementById('quizSection').classList.add('show');
+    document.getElementById('topicChip').textContent=`${questions.length} Questions`;
+    renderQuestion();
+
+  } catch(err){
+    document.getElementById('loadingBox').classList.remove('show');
+    document.getElementById('generateBtn').disabled=false;
+    showError('❌ '+err.message);
+  }
+}
+
+function buildPrompt(numQ,langInstruction,content){
+  const contentPart=content?`\n\nSTUDY MATERIAL:\n"""\n${content.slice(0,8000)}\n"""`:'';
+  return `You are an expert TNPSC exam question creator for Onlinemania coaching.
+
+${langInstruction}
+
+Create exactly ${numQ} multiple choice questions from the study material.
+${contentPart}
+
+RULES:
+- Questions ONLY from provided material
+- Each question has exactly 4 options (A,B,C,D)
+- Only one correct answer
+- Include brief explanation for correct answer
+- TNPSC exam style questions
+- Mix easy, medium, hard difficulty
+
+Return ONLY valid JSON array. No extra text. No markdown. Just the array:
+[{"question":"...","options":["A text","B text","C text","D text"],"correct":0,"explanation":"..."}]
+
+"correct" is 0-based index (0=A, 1=B, 2=C, 3=D).`;
+}
+
+function renderQuestion(){
+  const q=questions[currentQ];
+  const total=questions.length;
+  const answered=userAnswers[currentQ];
+  const labels=['A','B','C','D'];
+
+  document.getElementById('progressChip').textContent=`${currentQ+1} / ${total}`;
+  document.getElementById('progressBar').style.width=`${((currentQ+1)/total)*100}%`;
+
+  const optionsHTML=q.options.map((opt,i)=>{
+    let cls='option-btn';
+    if(answered!==null){
+      if(i===q.correct) cls+=' reveal';
+      if(i===answered && answered!==q.correct) cls+=' wrong';
+      if(i===answered && answered===q.correct) cls='option-btn correct';
+    }
+    return `<button class="${cls}" onclick="selectAnswer(${i})" ${answered!==null?'disabled':''}>
+      <span class="option-label">${labels[i]}</span><span>${opt}</span>
+    </button>`;
+  }).join('');
+
+  const icon=answered!==null?(answered===q.correct?'✅':'❌'):'';
+  const expShow=answered!==null?'show':'';
+
+  document.getElementById('questionContainer').innerHTML=`
+    <div class="question-card">
+      <div class="q-number">Question ${currentQ+1} of ${total} ${icon}</div>
+      <div class="q-text">${q.question}</div>
+      <div class="options-grid">${optionsHTML}</div>
+      <div class="explanation ${expShow}">
+        <strong>💡 Explanation</strong>${q.explanation}
+      </div>
+    </div>`;
+
+  document.getElementById('prevBtn').disabled=currentQ===0;
+  const nextBtn=document.getElementById('nextBtn');
+  const isLast=currentQ===total-1;
+  const allDone=userAnswers.every(a=>a!==null);
+
+  if(isLast && allDone){
+    nextBtn.textContent='📊 Results பாரு';
+    nextBtn.onclick=showResults;
+  } else {
+    nextBtn.textContent='அடுத்தது →';
+    nextBtn.onclick=()=>navigate(1);
+  }
+}
+
+function selectAnswer(idx){
+  if(userAnswers[currentQ]!==null) return;
+  userAnswers[currentQ]=idx;
+  renderQuestion();
+  if(currentQ<questions.length-1) setTimeout(()=>navigate(1),1600);
+}
+
+function navigate(dir){
+  const n=currentQ+dir;
+  if(n<0||n>=questions.length) return;
+  currentQ=n; renderQuestion();
+}
+
+function showResults(){
+  document.getElementById('quizSection').classList.remove('show');
+  document.getElementById('resultsCard').classList.add('show');
+  const correct=userAnswers.filter((a,i)=>a===questions[i].correct).length;
+  const total=questions.length;
+  const pct=Math.round((correct/total)*100);
+  document.getElementById('scoreNum').textContent=correct;
+  document.getElementById('scoreDenom').textContent=`/ ${total}`;
+  document.getElementById('correctCount').textContent=correct;
+  document.getElementById('wrongCount').textContent=total-correct;
+  document.getElementById('percentCount').textContent=pct+'%';
+  const results=[
+    [100,'🏆 Perfect Score!','அருமை! நீங்கள் இந்த topic-ஐ முழுமையாக master பண்ணிவிட்டீர்கள்!'],
+    [80,'🎯 சிறப்பான முயற்சி!','மிகவும் நல்லது! கொஞ்சம் practice பண்ணினால் perfect ஆகும்!'],
+    [60,'💪 நல்ல முயற்சி!','நல்ல start! இந்த topic-ஐ மீண்டும் படித்து practice பண்ணுங்கள்.'],
+    [0,'📚 இன்னும் படிக்கணும்!','கவலைப்படாதீர்கள்! Material-ஐ மீண்டும் படித்து try பண்ணுங்கள்.']
+  ];
+  const [,title,msg]=results.find(([min])=>pct>=min);
+  document.getElementById('resultTitle').textContent=title;
+  document.getElementById('resultMsg').textContent=msg;
+}
+
+function retryQuiz(){
+  currentQ=0;
+  userAnswers=new Array(questions.length).fill(null);
+  questions=questions.sort(()=>Math.random()-0.5);
+  document.getElementById('resultsCard').classList.remove('show');
+  document.getElementById('quizSection').classList.add('show');
+  renderQuestion();
+}
+
+function resetAll(){
+  questions=[]; currentQ=0; userAnswers=[]; fileData=null; fileType=null;
+  fileInput.value='';
+  document.getElementById('textInput').value='';
+  document.getElementById('filePreview').classList.remove('show');
+  uploadZone.style.display='';
+  document.getElementById('resultsCard').classList.remove('show');
+  document.getElementById('quizSection').classList.remove('show');
+  window.scrollTo({top:0,behavior:'smooth'});
+}
+</script>
+</body>
+</html>
