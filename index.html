@@ -355,15 +355,24 @@ async function generateQuestions(){
     messages=[{role:'user',content:buildPrompt(numQ,langMap[lang],content)}];
   }
 
-  try{
-    // Calls Netlify function — API key stays hidden on server
-    const res=await fetch('/.netlify/functions/generate',{
-      method:'POST',
-      headers:{'Content-Type':'application/json'},
-      body:JSON.stringify({messages})
-    });
+  try {
+  const res = await fetch('/.netlify/functions/generate', {
+    method: 'POST',
+    headers: { 'Content-Type': 'application/json' },
+    body: JSON.stringify({ messages })
+  });
 
-    const data=await res.json();
+  const data = await res.json(); // ✅ FIXED
+
+  console.log(data); // optional debug
+
+  // display response
+  const reply = data.content[0].text;
+  console.log("AI:", reply);
+
+} catch (err) {
+  console.error("Error:", err);
+}
     if(data.error) throw new Error(data.error);
 
     const raw=data.content.map(c=>c.text||'').join('');
