@@ -22,12 +22,14 @@ exports.handler = async function (event, context) {
           "Content-Type": "application/json",
         },
         body: JSON.stringify({
-          contents: [
-            {
-              parts: [{ text: userMessage }],
-            },
-          ],
-        }),
+  role: "assistant",
+  content: [
+    {
+      type: "text",
+      text: text,
+    },
+  ],
+}),
       }
     );
 
