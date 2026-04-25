@@ -5,7 +5,7 @@ exports.handler = async function (event, context) {
     "Access-Control-Allow-Methods": "POST, OPTIONS",
   };
 
-  // Handle preflight
+  // Handle preflight request
   if (event.httpMethod === "OPTIONS") {
     return {
       statusCode: 200,
@@ -14,7 +14,7 @@ exports.handler = async function (event, context) {
     };
   }
 
-  // Only allow POST
+  // Allow only POST
   if (event.httpMethod !== "POST") {
     return {
       statusCode: 405,
@@ -24,7 +24,7 @@ exports.handler = async function (event, context) {
   }
 
   try {
-    const body = JSON.parse(event.body);
+    const body = JSON.parse(event.body || "{}");
     const messages = body.messages || [];
 
     if (!messages.length) {
@@ -39,7 +39,7 @@ exports.handler = async function (event, context) {
     const userMessage = messages[messages.length - 1].content;
 
     // Call Gemini API
-    const response = await fetch(
+    const apiResponse = await fetch(
       `https://generativelanguage.googleapis.com/v1/models/gemini-pro:generateContent?key=${process.env.GEMINI_API_KEY}`,
       {
         method: "POST",
@@ -56,14 +56,26 @@ exports.handler = async function (event, context) {
       }
     );
 
-    const data = await response.json();
+    const data = await apiResponse.json();
 
-    // Extract response safely
-    const text =
-      data?.candidates?.[0]?.content?.parts?.[0]?.text ||
-      "No response";
+    console.log("Gemini raw response:", JSON.stringify(data));
 
-    // Return in Claude-compatible format (so frontend works)
+    // Safe extraction (NO CRASH GUARANTEED)
+    let text = "Sorry, no response generated.";
+
+    if (
+      data &&
+      data.candidates &&
+      data.candidates.length > 0 &&
+      data.candidates[0].content &&
+      data.candidates[0].content.parts &&
+      data.candidates[0].content.parts.length > 0 &&
+      data.candidates[0].content.parts[0].text
+    ) {
+      text = data.candidates[0].content.parts[0].text;
+    }
+
+    // Always return frontend-safe format
     return {
       statusCode: 200,
       headers,
@@ -79,11 +91,19 @@ exports.handler = async function (event, context) {
     };
 
   } catch (error) {
+    console.error("Function error:", error);
+
     return {
-      statusCode: 500,
+      statusCode: 200, // still 200 to avoid frontend crash
       headers,
       body: JSON.stringify({
-        error: error.message || "Something went wrong",
+        role: "assistant",
+        content: [
+          {
+            type: "text",
+            text: "⚠️ Server error. Please try again.",
+          },
+        ],
       }),
     };
   }
